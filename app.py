@@ -11,7 +11,7 @@ def get_google_rank(keyword, domain, api_key, country="in", lang="en"):
         "engine": "google",
         "q": keyword,
         "api_key": api_key,
-        "gl": country,  # Country code
+        "gl": country,  # Country code for location
         "hl": lang,     # Language
         "num": 100,     # Top 100 results
     }
@@ -37,8 +37,7 @@ st.set_page_config(page_title="Google Rank Tracker", page_icon="📊", layout="w
 st.title("📊 Google SERP Rank Tracker (via SerpAPI)")
 
 st.markdown("""
-Enter your **SerpAPI key**, keywords to track, and the domain you want to monitor.
-The app will check Google rankings (top 100 results) and display your keyword positions.
+Enter your **SerpAPI key**, keywords, domain, and select a location to track rankings.
 """)
 
 # API Key Input
@@ -54,6 +53,21 @@ keywords_input = st.text_area(
 )
 keywords = [kw.strip() for kw in keywords_input.replace(",", "\n").split("\n") if kw.strip()]
 
+# Location Selector (Country Code)
+location_map = {
+    "India": "in",
+    "United States": "us",
+    "United Kingdom": "uk",
+    "Canada": "ca",
+    "Australia": "au",
+    "Germany": "de",
+    "France": "fr",
+    "Singapore": "sg",
+    "UAE": "ae",
+}
+location_name = st.selectbox("📍 Select location:", list(location_map.keys()))
+country_code = location_map[location_name]
+
 # Run tracker
 if st.button("🚀 Check Rankings"):
     if not api_key or not domain or not keywords:
@@ -63,8 +77,12 @@ if st.button("🚀 Check Rankings"):
         progress = st.progress(0)
 
         for i, keyword in enumerate(keywords):
-            position = get_google_rank(keyword, domain, api_key)
-            results.append({"Keyword": keyword, "Rank Position": position})
+            position = get_google_rank(keyword, domain, api_key, country=country_code)
+            results.append({
+                "Keyword": keyword,
+                "Rank Position": position,
+                "Location": location_name
+            })
             sleep(1)  # Prevent hitting SerpAPI limits
             progress.progress((i + 1) / len(keywords))
 
